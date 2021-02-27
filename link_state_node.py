@@ -24,7 +24,7 @@ class Link_State_Node(Node):
 
         sequence_number = self.sequence_numbers[neighbor] + 1 if neighbor in self.sequence_numbers else 0
 
-        self.sequence_numbers[neighbor] = sequence_number
+        self.sequence_numbers[neighbor] = sequence_numberS
 
         edge = frozenset([self.id,neighbor])
 
@@ -42,6 +42,12 @@ class Link_State_Node(Node):
 
         edge, latency, sequence_number = json.loads(m)
 
+        # self.neighbors.add(neighbor) if latency >= 0 else self.neighbors.remove(neighbor)
+
+        # sequence_number = self.sequence_numbers[neighbor] + 1 if neighbor in self.sequence_numbers else 0
+
+        # self.sequence_numbers[neighbor] = sequence_number
+
         edge = frozenset(edge)
 
         if edge not in self.graph or self.graph[edge]['sequence_number'] < sequence_number:
@@ -53,7 +59,7 @@ class Link_State_Node(Node):
                 message = json.dumps((  list(edge), 
                                         self.graph[edge]['latency'], 
                                         self.graph[edge]['sequence_number']))
-                                        
+
                 self.send_to_neighbors(message)
 
             self.debug_print()
