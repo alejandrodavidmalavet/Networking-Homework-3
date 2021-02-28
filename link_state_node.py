@@ -3,6 +3,7 @@ import json
 # py sim.py LINK_STATE demo.event
 
 class Link_State_Node(Node):
+
     def __init__(self, id):
 
         super().__init__(id)
@@ -12,7 +13,7 @@ class Link_State_Node(Node):
         self.nodes = {self.id : 0}
 
         self.dist = {self.id : 0}
-        
+
         self.routing_table = {self.id : None}
 
 
@@ -44,6 +45,18 @@ class Link_State_Node(Node):
 
 
 
+    def get_next_hop(self, destination):
+
+        self.build_routing_table()
+
+        while destination in self.routing_table and self.routing_table[destination] is not self.id:
+
+            destination = self.routing_table[destination]
+
+        return destination if destination in self.routing_table else -1
+
+
+
     def link(self,edge,latency,sequence_number):
 
         self.build_edge(edge,latency,sequence_number)
@@ -60,7 +73,16 @@ class Link_State_Node(Node):
 
         self.send_to_neighbors(self.build_message(edge))
 
-            
+
+
+    def build_edge(self,edge,latency,sequence_number):
+
+        self.edges[edge] = {
+            'latency': latency,
+            'sequence_number': sequence_number
+        }
+
+
 
     def build_message(self,edge):
 
@@ -102,15 +124,6 @@ class Link_State_Node(Node):
                         self.routing_table[neighbor] = node
 
         self.nodes = nodes_copy
-
-
-
-    def build_edge(self,edge,latency,sequence_number):
-
-        self.edges[edge] = {
-            'latency': latency,
-            'sequence_number': sequence_number
-        }
     
 
 
@@ -121,15 +134,3 @@ class Link_State_Node(Node):
         edge.remove(node)
 
         return edge.pop()
-
-
-
-    def get_next_hop(self, destination):
-
-        self.build_routing_table()
-
-        while destination in self.routing_table and self.routing_table[destination] is not self.id:
-
-            destination = self.routing_table[destination]
-
-        return destination if destination in self.routing_table else -1
