@@ -12,8 +12,6 @@ class Link_State_Node(Node):
 
         self.nodes = {self.id : 0}
 
-        self.dist = {self.id : 0}
-
         self.routing_table = {self.id : None}
 
 
@@ -92,7 +90,7 @@ class Link_State_Node(Node):
 
     def build_routing_table(self):
 
-        self.dist = self.nodes.copy()
+        dist = self.nodes.copy()
 
         nodes_copy = dict()
 
@@ -112,14 +110,14 @@ class Link_State_Node(Node):
 
                     neighbor = self.get_neighbor(edge,node)
 
-                    alt = self.dist[node] + latency
+                    alt = dist[node] + latency
 
-                    if alt < self.dist[neighbor]:
+                    if alt < dist[neighbor]:
 
                         if neighbor in self.nodes: 
                             self.nodes[neighbor] = alt
 
-                        self.dist[neighbor] = alt
+                        dist[neighbor] = alt
 
                         self.routing_table[neighbor] = node
 
