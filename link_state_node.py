@@ -4,10 +4,15 @@ import json
 
 class Link_State_Node(Node):
     def __init__(self, id):
+
         super().__init__(id)
+
         self.edges = dict()
+
         self.nodes = {self.id : 0}
+
         self.dist = {self.id : 0}
+        
         self.routing_table = {self.id : None}
 
 
@@ -25,9 +30,7 @@ class Link_State_Node(Node):
 
         self.link(edge,latency,sequence_number)
 
-        self.build_routing_table()
-
-
+        
 
     def process_incoming_routing_message(self, m):
 
@@ -37,13 +40,31 @@ class Link_State_Node(Node):
 
         if edge not in self.edges or (self.edges[edge]['sequence_number'] < sequence_number):
 
-            self.build_edge(edge,latency,sequence_number)
+            self.link(edge,latency,sequence_number)
 
-            for edge in self.edges:
 
-                self.link(edge,self.edges[edge]['latency'],self.edges[edge]['sequence_number'])
 
-            self.build_routing_table()
+    def link(self,edge,latency,sequence_number):
+
+        self.build_edge(edge,latency,sequence_number)
+            
+        for node in edge: 
+
+            if node not in self.nodes:
+
+                for edge in self.edges:
+                    
+                    self.send_to_neighbor(node,self.build_message(edge))
+
+            self.nodes[node] = float('inf') if node != self.id else 0
+
+        self.send_to_neighbors(self.build_message(edge))
+
+            
+
+    def build_message(self,edge):
+
+        return json.dumps((list(edge),self.edges[edge]['latency'],self.edges[edge]['sequence_number']))
 
 
 
@@ -57,7 +78,7 @@ class Link_State_Node(Node):
 
             node = min(self.nodes, key=self.nodes.get)
 
-            nodes_copy[node] = self.nodes[node]
+            nodes_copy[node] = float('inf') if node != self.id else 0
 
             del self.nodes[node]
 
@@ -84,21 +105,8 @@ class Link_State_Node(Node):
 
 
 
-    def link(self,edge,latency,sequence_number):
-        
-        for node in edge: self.nodes[node] = float('inf') if node != self.id else 0
-
-        self.build_edge(edge,latency,sequence_number)
-
-        message = json.dumps((  list(edge), 
-                                latency, 
-                                sequence_number))
-
-        self.send_to_neighbors(message)
-
-
-
     def build_edge(self,edge,latency,sequence_number):
+
         self.edges[edge] = {
             'latency': latency,
             'sequence_number': sequence_number
@@ -107,22 +115,21 @@ class Link_State_Node(Node):
 
 
     def get_neighbor(self,edge,node):
+
         edge = set(edge)
+
         edge.remove(node)
+
         return edge.pop()
 
 
 
-    def debug(self):
-        print("Node:", self.id, "Nodes:",list(self.nodes))
-        for edge in self.edges:
-            print('     Edge:',edge)
-            print('     Latency:', self.edges[edge]['latency'])
-            print('     Sequence Number:',self.edges[edge]['sequence_number'])
-
-
-
     def get_next_hop(self, destination):
+
+        self.build_routing_table()
+
         while destination in self.routing_table and self.routing_table[destination] is not self.id:
+
             destination = self.routing_table[destination]
+
         return destination if destination in self.routing_table else -1
