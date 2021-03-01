@@ -61,14 +61,17 @@ class Link_State_Node(Node):
 
         self.build_edge(edge,latency,sequence_number)
             
+        # LOOPING THROUGH TWO NODES THAT MAKE UP ONE EDGE
         for node in edge: 
 
+            # IF THE NODE IS PART OF MY NODE"S NODE RECORD
             if node not in self.nodes:
-
+                #if not, for every one of my nodes
                 for edge in self.edges:
-                    
+                    #send update to that node, with the that edge
                     self.send_to_neighbor(node,self.build_message(edge))
 
+            # set distance of inf
             self.nodes[node] = float('inf') if node != self.id else 0
 
         self.send_to_neighbors(self.build_message(edge))
